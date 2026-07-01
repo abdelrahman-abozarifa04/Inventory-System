@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ═══════════ Helper Functions ═══════════
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function getUserTenantId() {
+      return getUserDoc().tenantId;
+    }
+
+    function isTenantMember(tenantId) {
+      return isAuthenticated() && getUserTenantId() == tenantId;
+    }
+
+    function isTenantOwner(tenantId) {
+      return isTenantMember(tenantId) && getUserDoc().role == 'owner';
+    }
+
+    // ═══════════ User Profiles ═══════════
+    // Users can only read/write their own profile document
+    match /users/{userId} {
+      allow read:  if isAuthenticated() && request.auth.uid == userId;
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // ═══════════ Tenant Data (Isolated) ═══════════
+    // All sub-documents under a tenant require membership
+    match /tenants/{tenantId}/{document=**} {
+      allow read:  if isTenantMember(tenantId);
+      allow write: if isTenantMember(tenantId);
+    }
+
+    // ═══════════ Subscription Plans (Public Read) ═══════════
+    match /plans/{planId} {
+      allow read:  if true;
+      allow write: if false; // admin only via backend / Cloud Functions
+    }
+
+    // ═══════════ Subscriptions ═══════════
+    match /subscriptions/{subId} {
+      allow read:  if isAuthenticated();
+      allow write: if false; // managed by Cloud Functions / webhooks
+    }
+  }
+}

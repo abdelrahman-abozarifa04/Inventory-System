@@ -1,0 +1,7 @@
+D:\Inventory System\README.md
+D:\Inventory System\index.html
+D:\Inventory System\task.md
+D:\Inventory System\public\favicon.svg
+D:\Inventory System\public\icons.svg
+D:\Inventory System\src\assets\hero.png
+D:\Inventory System\src\assets\vite.svg

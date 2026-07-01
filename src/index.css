@@ -1,0 +1,562 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Kufi+Arabic:wght@300;400;500;600;700;800&display=swap");
+@import "tailwindcss";
+
+/* ========================================
+   Tailwind v4 Custom Theme Tokens
+   ======================================== */
+@theme {
+  /* Premium Clinical Colors */
+  --color-primary: #0E2938;
+  --color-primary-dark: #06141C;
+  --color-primary-light: #183F54;
+
+  /* Accent / Highlight Colors */
+  --color-accent: #2A6F97;
+  --color-highlight: #06B6D4;
+  --color-highlight-dim: rgba(6, 182, 212, 0.12);
+  --color-highlight-glow: rgba(6, 182, 212, 0.28);
+
+  /* Background & Surface */
+  --color-bg: #F4F7F9;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F8FAFC;
+  --color-surface-strong: #E2E8F0;
+  --color-surface-hover: #F1F5F9;
+  --color-surface-glass: rgba(255, 255, 255, 0.75);
+  --color-border: rgba(15, 23, 42, 0.06);
+  --color-border-strong: rgba(15, 23, 42, 0.12);
+
+  /* Text */
+  --color-text: #0F172A;
+  --color-text-muted: #64748B;
+  --color-text-inverse: #FFFFFF;
+  --color-text-highlight: #22D3EE;
+
+  /* Status Colors */
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #F43F5E;
+  --color-info: #0EA5E9;
+
+  /* Sidebar */
+  --color-sidebar-bg: linear-gradient(180deg, #091E29 0%, #0E2938 100%);
+
+  /* Ambient Soft Shadows */
+  --shadow-soft: 0 10px 30px -10px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.02);
+  --shadow-medium: 0 20px 50px -12px rgba(15, 23, 42, 0.09), 0 1px 4px rgba(15, 23, 42, 0.03);
+  --shadow-highlight: 0 0 0 4px rgba(6, 182, 212, 0.12);
+  --shadow-card: 0 10px 25px -5px rgba(15, 23, 42, 0.03), 0 0 0 1px rgba(15, 23, 42, 0.04);
+  --shadow-glow: 0 0 25px rgba(6, 182, 212, 0.15);
+
+  /* Border Radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.75rem;
+  --radius-full: 9999px;
+
+  /* Transition */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Font */
+  --font-sans: 'Plus Jakarta Sans', 'Noto Kufi Arabic', system-ui, sans-serif;
+
+  /* Spacious 8px Spacing Scale */
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 48px;
+  --space-6: 64px;
+}
+
+/* ========================================
+   Dark Mode  — Override CSS custom properties
+   ======================================== */
+html.dark {
+  --color-bg: #070B11;
+  --color-surface: #0E1622;
+  --color-surface-alt: #121C2B;
+  --color-surface-strong: #172437;
+  --color-surface-hover: #19273C;
+  --color-surface-glass: rgba(14, 22, 34, 0.85);
+  --color-border: rgba(255, 255, 255, 0.05);
+  --color-border-strong: rgba(255, 255, 255, 0.1);
+  --color-text: #F1F5F9;
+  --color-text-muted: #94A3B8;
+  --color-text-inverse: #070B11;
+  --shadow-soft: 0 10px 25px -10px rgba(0, 0, 0, 0.5);
+  --shadow-medium: 0 25px 50px -15px rgba(0, 0, 0, 0.7);
+  --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* ========================================
+   Base Styles
+   ======================================== */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.65;
+  font-size: 16px;
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+/* ========================================
+   Typography Scale & Spaciousness
+   ======================================= */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  line-height: 1.35;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+p,
+li,
+td,
+th,
+label,
+span {
+  line-height: 1.6;
+}
+
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* ========================================
+   Custom Scrollbar
+   ======================================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}
+
+/* ========================================
+   Focus Ring — Accessibility
+   ======================================== */
+:focus-visible {
+  outline: 2px solid var(--color-highlight);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+::selection {
+  background-color: var(--color-highlight);
+  color: var(--color-primary-dark);
+}
+
+/* ========================================
+   Glassmorphism Utility
+   ======================================== */
+.glass {
+  background: var(--color-surface-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border);
+}
+
+html.dark .glass {
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+/* ========================================
+   Glow Effect
+   ======================================== */
+.glow-highlight {
+  box-shadow: var(--shadow-glow);
+}
+
+/* ========================================
+   Premium Surface Utilities
+   ======================================== */
+.surface {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+  transition: background-color var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.surface-alt {
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+}
+
+.surface-strong {
+  background: var(--color-surface-strong);
+  border: 1px solid var(--color-border-strong);
+}
+
+.focus-ring {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-highlight-dim);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-highlight), #60A5FA);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ========================================
+   Sidebar gradient background
+   ======================================== */
+.sidebar-gradient {
+  background: linear-gradient(180deg, #091E29 0%, #0E2938 100%);
+}
+
+html.dark .sidebar-gradient {
+  background: linear-gradient(180deg, #070B11 0%, #0E1622 100%);
+}
+
+/* ========================================
+   Subtle Grid Patterns & Accent Canvas
+   ======================================== */
+.bg-pattern {
+  background-image: radial-gradient(circle at 1px 1px, rgba(14, 41, 56, 0.04) 1px, transparent 0);
+  background-size: 32px 32px;
+}
+
+html.dark .bg-pattern {
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.02) 1px, transparent 0);
+}
+
+/* Ambient Moving Gradients */
+.ambient-glow {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, rgba(6, 182, 212, 0) 70%);
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ========================================
+   Icon Alignment Utilities
+   ======================================== */
+.icon-row {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  line-height: 1.2;
+}
+
+.icon-inline {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin-inline-end: 8px;
+  flex-shrink: 0;
+}
+
+button svg,
+a svg,
+.btn svg {
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+/* ========================================
+   Page Container — Consistent Spacious Spacing
+   ======================================== */
+.page-container {
+  max-width: 1320px;
+  margin-inline: auto;
+  padding: 24px;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .page-container {
+    padding: 36px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .page-container {
+    padding: 48px;
+  }
+}
+
+/* ========================================
+   Card Utility — Breathable Card Styling
+   ======================================== */
+.card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+  transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+}
+
+@media (min-width: 640px) {
+  .card {
+    padding: 32px;
+  }
+}
+
+html.dark .card {
+  border-color: var(--color-border);
+}
+
+/* ========================================
+   Z-Index Layering System
+   ======================================== */
+/* z-10:  page content base */
+/* z-20:  sticky navbar */
+/* z-30:  desktop sidebar */
+/* z-40:  mobile overlay */
+/* z-50:  mobile sidebar drawer */
+/* z-60:  modals */
+/* z-70:  tooltips / toasts */
+
+/* ========================================
+   Mobile Overflow Guards
+   ======================================== */
+.overflow-guard {
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+/* ========================================
+   Scanner Flash Animation
+   ======================================== */
+@keyframes scan-flash {
+  0% {
+    box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 16px rgba(6, 182, 212, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(6, 182, 212, 0);
+  }
+}
+
+.scan-flash {
+  animation: scan-flash 0.6s ease-out;
+}
+
+@keyframes scan-line {
+  0% {
+    top: 10%;
+  }
+  100% {
+    top: 90%;
+  }
+}
+
+.scan-line {
+  animation: scan-line 2s linear infinite alternate;
+}
+
+/* ========================================
+   Spinner Utility
+   ======================================== */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(6, 182, 212, 0.2);
+  border-top-color: var(--color-highlight);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ========================================
+   Dark mode overrides for common Tailwind
+   ======================================== */
+html.dark .border-gray-100 {
+  border-color: var(--color-border);
+}
+
+html.dark .border-gray-200 {
+  border-color: var(--color-border-strong);
+}
+
+html.dark .border-gray-50 {
+  border-color: rgba(255, 255, 255, 0.03);
+}
+
+html.dark .bg-gray-50 {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+html.dark .bg-gray-100 {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+html.dark .hover\:bg-gray-50:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+html.dark .bg-white {
+  background-color: var(--color-surface);
+}
+
+html.dark .bg-white\/50 {
+  background-color: rgba(14, 22, 34, 0.5);
+}
+
+html.dark .bg-white\/80 {
+  background-color: rgba(14, 22, 34, 0.8);
+}
+
+html.dark .text-gray-500 {
+  color: #64748B;
+}
+
+html.dark .text-gray-600 {
+  color: #94A3B8;
+}
+
+/* ========================================
+   Form input base styles — Spacious & Premium
+   ======================================== */
+.form-input {
+  width: 100%;
+  padding: 14px 20px;
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-highlight);
+  box-shadow: 0 0 0 4px var(--color-highlight-dim);
+}
+
+.form-input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: rgba(0, 0, 0, 0.03);
+}
+
+html.dark .form-input {
+  border-color: var(--color-border);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+html.dark .form-input:disabled {
+  background: rgba(255, 255, 255, 0.01);
+}
+
+/* ========================================
+   Form label — Spacious
+   ======================================== */
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-bottom: 12px;
+  letter-spacing: 0.01em;
+}
+
+.input-leading-icon {
+  inset-inline-start: 1rem;
+}
+
+.input-has-leading-icon {
+  padding-inline-start: 3rem;
+}
+
+.input-has-trailing-slot {
+  padding-inline-end: 3rem;
+}
+
+/* ========================================
+   Barcode print styles
+   ======================================== */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .barcode-print-area,
+  .barcode-print-area * {
+    visibility: visible;
+  }
+
+  .barcode-print-area {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 32px;
+    text-align: center;
+  }
+}

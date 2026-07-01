@@ -1,0 +1,42 @@
+# ─── Dependencies ───────────────────────────────────────────────────────────
+node_modules/
+
+# ─── Environment / Secrets ──────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ─── Build outputs ──────────────────────────────────────────────────────────
+dist/
+dist-ssr/
+build/
+
+# ─── Firebase ────────────────────────────────────────────────────────────────
+.firebase/
+firebase-debug.log
+firestore-debug.log
+storage-debug.log
+ui-debug.log
+
+# ─── OS / Editor ────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ─── Logs ───────────────────────────────────────────────────────────────────
+*.log
+logs/
+npm-debug.log*
+
+# ─── Vite cache ─────────────────────────────────────────────────────────────
+.vite/
+
+# ─── Vercel / Netlify ────────────────────────────────────────────────────────
+.vercel/
+.netlify/
+# ─── Local Agent Settings & Skills ──────────────────────────────────────────
+.agents/

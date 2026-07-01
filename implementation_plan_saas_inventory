@@ -1,0 +1,663 @@
+# 🚀 خطة تحويل نظام المخزون إلى SaaS Product — تعليمات تنفيذ مباشرة
+
+## ⚠️ قبل ما تبدأ — اقرا ده كويس
+
+> [!CAUTION]
+> **الفايلات اللي قدامك دي هي نسخة (Copy) من بروجكت مخزون عيادة أسنان شغال في Production.**
+> البروجكت الأصلي مش هنا — ده كوبي جاهزة للتعديل المباشر.
+> **عدّل في أي ملف براحتك بدون قلق.**
+
+### السياق:
+- الفايلات دي **كوبي تم أخذها مسبقاً** من بروجكت مخزون عيادة أسنان (single-tenant)
+- مطلوب تحويلها لـ **SaaS Product عام** (multi-tenant) يصلح لأي نوع مخزن
+- **Firebase Project جديد بالكامل** لازم يتعمل عن طريق MCP (مالوش أي علاقة بالقديم)
+- الـ `.env` و `.firebaserc` الموجودين **قديمين ولازم يتحذفوا ويتعملوا من جديد** بعد إنشاء الفايربيز الجديدة
+
+> [!WARNING]
+> **امسح فولدر `.git` بالكامل وأي ملفات Git قديمة!**
+> البروجكت ده كان متربط بـ GitHub repo قديم — المستخدم هيعمل repo جديد بنفسه.
+> امسح: `.git/` (الفولدر كامل) + `.gitignore` (هيتعمل واحد جديد مناسب للـ SaaS)
+> **لا تعمل `git init` — المستخدم هيعمل الـ repo بنفسه.**
+
+### 🛠️ السكيلز اللي لازم تستخدمها:
+
+> [!IMPORTANT]
+> **استخدم السكيلز دي — هيتعملهم mention في الريكويست. اقرا SKILL.md بتاع كل واحدة واتبع التعليمات بالظبط.**
+
+| السكيل | الوظيفة | متى تستخدمها |
+|--------|---------|-------------|
+| **Impeccable** | تحسين وتظبيط الـ UI/UX — إصلاح layout, spacing, hierarchy, colors, typography, responsive, accessibility | **استخدمها في كل تعديل UI.** البروجكت الأصلي كان فيه **عيوب كتير في الـ UI والـ layout** — spacing مش منتظم، visual hierarchy ضعيف، responsive issues. Impeccable هتساعدك تطلع الـ UI بشكل production-grade ومظبوط. |
+| **Graphify** | بناء knowledge graph للبروجكت عشان تفهم الكود والعلاقات بين الملفات | استخدمها **في البداية** قبل ما تبدأ تعديلات. اعمل `/graphify` على البروجكت عشان تفهم العلاقات بين الملفات والـ components والـ hooks وإزاي كل حاجة متربطة. |
+| **Caveman** | تقليل استهلاك التوكنز مع الحفاظ على الدقة التقنية | استخدمها عشان تكون مختصر وفعّال في التواصل. |
+
+> [!TIP]
+> **لو في أي سكيل تانية** من فولدر السكيلز هتفيدك في المهمة (مثلاً: `react-patterns`, `firebase`, `tailwind-patterns`, `debugging`, `webapp-testing`, إلخ) — **استخدمها بدون ما تسأل.** اقرا الـ SKILL.md بتاعها واتبع التعليمات.
+
+> [!CAUTION]
+> **النقطة الأهم عن Impeccable:**
+> البروجكت الأصلي كان فيه مشاكل كتير في الـ UI خصوصاً في الـ **layout** — spacing عشوائي، عناصر مش aligned صح، visual hierarchy ضعيف، responsive behavior مش مظبوط، وأجزاء من الواجهة مش polished.
+> **لازم تستخدم Impeccable عشان تصلح كل المشاكل دي** وتطلع الـ UI بشكل premium و production-ready.
+> كل صفحة أو component تعدلها — شغّل Impeccable عليها عشان تتأكد إنها مظبوطة 100%.
+
+### التكنولوجي ستاك الحالي:
+- **Frontend:** React 19 + Vite + Tailwind CSS v4
+- **Backend/DB:** Firebase (Firestore + Auth + Storage + Messaging)
+- **اللغات:** عربي/إنجليزي (i18next)
+- **الفيتشرز الموجودة:** مخزون، معاملات وارد/صادر، باركود سكانر، تنبيهات، categories، trade names، batches
+
+---
+
+## 📈 خطوات التنفيذ بالترتيب
+
+> [!IMPORTANT]
+> نفّذ الخطوات بالترتيب ده بالظبط. كل خطوة تعتمد على اللي قبلها.
+
+| # | الخطوة | الأولوية | ملاحظات |
+|---|--------|---------|--------|
+| 1 | **مسح كل ملفات Git القديمة** (`.git/` فولدر + `.gitignore`) | 🔴 أول حاجة | المستخدم هيعمل repo جديد بنفسه — **لا تعمل git init** |
+| 2 | **حذف `.env` و `.firebaserc` القديمين** | 🔴 أول حاجة | فيهم keys فايربيز قديمة مالناش دعوة بيها |
+| 3 | **إنشاء Firebase Project جديد عن طريق MCP** | 🔴 عالية | شوف قسم "إنشاء Firebase" تحت |
+| 4 | **إنشاء `.env` جديد** بالـ keys من `firebase_get_sdk_config` | 🔴 عالية | |
+| 5 | **تعديل `src/config/dbConfig.js`** ليشتغل بـ tenantId | 🔴 عالية | شوف قسم 8 |
+| 6 | **إنشاء `src/context/TenantContext.jsx`** | 🔴 عالية | شوف قسم 7 |
+| 7 | **تعديل `src/context/AuthContext.jsx`** ليحمل tenantId | 🔴 عالية | |
+| 8 | **تعديل `src/context/SystemContext.jsx`** ليقرا من tenant path | 🔴 عالية | |
+| 9 | **تعديل جميع الـ hooks** لاستخدام tenant path | 🔴 عالية | 9 hooks — شوف قسم 9 |
+| 10 | **إنشاء `src/components/auth/SubscriptionGuard.jsx`** | 🔴 عالية | شوف قسم 7 |
+| 11 | **كتابة Firestore Security Rules الجديدة** + deploy | 🔴 عالية | شوف قسم 2 |
+| 12 | **إزالة كل الـ hardcoded dental/clinic references** من الكود | 🟡 متوسطة | شوف قسم 3 |
+| 13 | **تعديل i18n** (نصوص عامة بدل عيادة أسنان) | 🟡 متوسطة | شوف قسم 10 |
+| 14 | **إنشاء `src/pages/Signup.jsx`** + Onboarding Wizard | 🟡 متوسطة | شوف قسم 6 |
+| 15 | **إضافة Settings fields جديدة** (عملة، نوع مخزن...) في `EditSystemModal` | 🟡 متوسطة | |
+| 16 | **تعديل `App.jsx`** — إضافة Routes جديدة + Provider structure | 🟡 متوسطة | شوف قسم 7 |
+| 17 | **عمل `.gitignore` جديد** مناسب للـ SaaS | 🟡 متوسطة | يشمل: `node_modules/`, `.env`, `dist/`, `.firebase/` |
+| 18 | **تكامل بوابة الدفع** (Stripe/Paymob) | 🟡 متوسطة | محتاج إجابة سؤال من المستخدم |
+| 19 | **Billing Page** + Subscription Management | 🟡 متوسطة | |
+| 20 | **Landing Page** (بروجكت منفصل) | 🟢 يمكن تأجيلها | |
+| 21 | **Team Invitations** (multi-user per tenant) | 🟢 يمكن تأجيلها | |
+| 22 | **Admin Dashboard** (لإدارة كل الـ tenants) | 🟢 يمكن تأجيلها | |
+
+---
+
+## 🔥 إنشاء Firebase Project جديد (عن طريق MCP)
+
+> [!IMPORTANT]
+> استخدم Firebase MCP tools بالترتيب ده:
+
+```
+1. firebase_create_project
+   → اسم المشروع: [اسم المنتج - اسأل المستخدم لو مش محدد]
+   
+2. firebase_create_app
+   → نوع: WEB
+   → اسم: [اسم المنتج] Web App
+
+3. firebase_get_sdk_config
+   → جلب: apiKey, authDomain, projectId, storageBucket, messagingSenderId, appId
+
+4. إنشاء .env جديد بالـ config:
+   VITE_FIREBASE_API_KEY="[apiKey]"
+   VITE_FIREBASE_AUTH_DOMAIN="[authDomain]"
+   VITE_FIREBASE_PROJECT_ID="[projectId]"
+   VITE_FIREBASE_STORAGE_BUCKET="[storageBucket]"
+   VITE_FIREBASE_MESSAGING_SENDER_ID="[messagingSenderId]"
+   VITE_FIREBASE_APP_ID="[appId]"
+
+5. إنشاء .firebaserc جديد:
+   { "projects": { "default": "[projectId]" } }
+
+6. firebase_init
+   → تفعيل: Firestore, Auth, Storage, Hosting
+
+7. firebase_deploy (بعد كتابة Security Rules)
+```
+
+> **ملاحظة:** `src/config/firebase.js` مش محتاج يتغير — بيقرا من `.env` أوتوماتيك.
+
+---
+
+## 🏗️ الأركيتكتشر الجديد (Multi-Tenant SaaS)
+
+### المفهوم الأساسي: كل عميل (Tenant) = مخزن/عيادة/محل مستقل
+
+```
+tenants/
+  ├── tenant_abc123/          ← مخزن أدوية
+  │   ├── inventory_items/
+  │   ├── categories/
+  │   ├── trade_names/
+  │   ├── transactions/
+  │   ├── alerts/
+  │   └── settings/system
+  │
+  ├── tenant_def456/          ← عيادة أسنان
+  │   ├── inventory_items/
+  │   ├── categories/
+  │   ├── ...
+  │
+  └── tenant_ghi789/          ← سوبرماركت
+      ├── inventory_items/
+      └── ...
+```
+
+---
+
+## التغييرات المطلوبة بالتفصيل
+
+---
+
+### 1️⃣ هيكل Firestore الجديد (Data Isolation)
+
+> [!CAUTION]
+> دي أهم نقطة — لازم كل tenant يبقى **معزول تماماً** عن التاني
+
+#### الوضع الحالي في الكود (لازم يتغير):
+```
+/users/{userId}
+/inventory_items/{itemId}
+/categories/{catId}
+/trade_names/{tradeId}
+/transactions/{txnId}
+/alerts/{alertId}
+/settings/system
+```
+
+#### الوضع الجديد:
+```
+/tenants/{tenantId}/inventory_items/{itemId}
+/tenants/{tenantId}/categories/{catId}
+/tenants/{tenantId}/trade_names/{tradeId}
+/tenants/{tenantId}/transactions/{txnId}
+/tenants/{tenantId}/alerts/{alertId}
+/tenants/{tenantId}/settings/system        ← إعدادات المخزن (اسم، لوجو، عملة، نوع)
+
+/users/{userId}                            ← بيانات المستخدم العامة
+  ├── tenantId: "tenant_abc123"            ← المخزن اللي ينتمي له
+  ├── role: "owner" | "admin" | "staff"
+  ├── subscriptionId: "sub_xyz"
+  └── ...
+
+/subscriptions/{subscriptionId}            ← بيانات الاشتراك
+  ├── tenantId
+  ├── plan: "monthly" | "quarterly" | "semi_annual" | "annual"
+  ├── status: "active" | "trial" | "expired" | "cancelled"
+  ├── startDate
+  ├── endDate
+  ├── paymentMethod
+  └── ...
+
+/plans/{planId}                            ← خطط الأسعار
+  ├── name_en, name_ar
+  ├── price_monthly, price_quarterly, price_semi_annual, price_annual
+  ├── features: [...]
+  ├── maxItems: 500 | 2000 | unlimited
+  ├── maxUsers: 1 | 5 | unlimited
+  └── ...
+```
+
+---
+
+### 2️⃣ Firestore Security Rules
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ========== Helper Functions ==========
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserTenantId() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.tenantId;
+    }
+
+    function isTenantMember(tenantId) {
+      return isAuthenticated() && getUserTenantId() == tenantId;
+    }
+
+    function isTenantOwner(tenantId) {
+      return isTenantMember(tenantId) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner';
+    }
+
+    function hasActiveSubscription(tenantId) {
+      let sub = get(/databases/$(database)/documents/tenants/$(tenantId)/subscription/active);
+      return sub.data.status == 'active' || sub.data.status == 'trial';
+    }
+
+    // ========== User Profiles ==========
+    match /users/{userId} {
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      allow write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // ========== Tenant Data ==========
+    match /tenants/{tenantId}/{document=**} {
+      allow read: if isTenantMember(tenantId);
+      allow write: if isTenantMember(tenantId) && hasActiveSubscription(tenantId);
+    }
+
+    // ========== Subscription Plans (Public Read) ==========
+    match /plans/{planId} {
+      allow read: if true;
+      allow write: if false; // admin only via backend
+    }
+  }
+}
+```
+
+---
+
+### 3️⃣ الحاجات الثابتة vs الديناميكية
+
+| العنصر | الوضع الحالي في الكود | المفروض يبقى | التفاصيل |
+|--------|---------------------|-------------|----------|
+| **اسم النظام** | "Dental Clinic Inventory" (hardcoded) | 🔄 **ديناميك** | المستخدم يدخل اسم مخزنه (en/ar) وقت التسجيل |
+| **اللوجو** | أيقونة Cross ثابتة ✝️ | 🔄 **ديناميك** | المستخدم يرفع لوجو خاص بيه |
+| **نوع المخزن** | عيادة أسنان | 🔄 **ديناميك** | يختار: صيدلية، مطعم، سوبرماركت، مخزن ملابس، مخزن عام... |
+| **العملة** | EGP/ج.م (hardcoded) | 🔄 **ديناميك** | المستخدم يختار عملته (EGP, USD, SAR, AED...) |
+| **الكاتيجوريز** | ثابتة لعيادة | 🔄 **ديناميك** | كل مخزن يعمل كاتيجوريز خاصة بيه (ده موجود أصلاً ✅) |
+| **الأسماء التجارية** | ثابتة | 🔄 **ديناميك** | كل مخزن له trade names خاصة (ده موجود أصلاً ✅) |
+| **Welcome Text** | "مرحبًا بك في نظام مخزون عيادة الأسنان" | 🔄 **ديناميك** | يتغير حسب اسم المخزن |
+| **أيقونة Sidebar/Login** | `Cross` (صليب طبي) | 🔄 **ديناميك** | تتغير حسب نوع المخزن أو اللوجو |
+| **Copyright Text** | "Dental Clinic Inventory Management" | 🔄 **ديناميك** | يبقى "Powered by [اسم المنتج]" |
+| **Dashboard Stats** | أيقونات عامة | ⚡ **ثابت** | الإحصائيات عامة — تنفع لأي مخزن |
+| **نظام الباركود** | ✅ | ⚡ **ثابت** | عام لأي نوع مخزن |
+| **Batches System** | ✅ | ⚡ **ثابت** | عام |
+| **المعاملات (IN/OUT)** | ✅ | ⚡ **ثابت** | وارد/صادر — نفس المنطق لأي مخزن |
+| **التنبيهات** | LOW_STOCK, EXPIRING_SOON | ⚡ **ثابت** | تنفع لأي مخزن |
+| **الثيم (Dark/Light)** | ✅ | ⚡ **ثابت** | عام |
+| **اللغة (AR/EN)** | ✅ | ⚡ **ثابت** | عام |
+
+---
+
+### 4️⃣ الملفات اللي محتاجة تعديل
+
+#### 🔴 ملفات تتحذف وتتعمل من جديد:
+
+| الملف | السبب |
+|-------|-------|
+| `.env` | فيه keys فايربيز قديمة — هيتعمل بـ keys جديدة |
+| `.firebaserc` | فيه project ID قديم — هيتعمل بـ ID جديد |
+
+#### 🔴 تعديلات Critical (في الملفات الموجودة):
+
+| الملف | التعديل المطلوب |
+|-------|----------------|
+| `src/config/dbConfig.js` | كل الـ collections تبقى تحت `/tenants/{tenantId}/` |
+| `src/config/firebase.js` | **يفضل زي ما هو** — بيقرا من `.env` |
+| `src/context/AuthContext.jsx` | يجيب الـ `tenantId` من user document ويخزنه في الـ context |
+| `src/context/SystemContext.jsx` | يقرا settings من `/tenants/{tenantId}/settings/system` |
+| `firestore.rules` | يتغير بالكامل (قسم 2 فوق) |
+| `src/App.jsx` | إضافة Providers جديدة + Routes جديدة |
+
+#### 🔴 الـ Hooks (كلها محتاجة تعديل):
+
+| الملف | التعديل |
+|-------|--------|
+| `src/hooks/useInventory.js` | يستخدم `tenantId` من TenantContext |
+| `src/hooks/useTransactions.js` | نفس التعديل |
+| `src/hooks/useCategories.js` | نفس التعديل |
+| `src/hooks/useTradeNames.js` | نفس التعديل |
+| `src/hooks/useAlerts.js` | نفس التعديل |
+| `src/hooks/useAlertSync.js` | نفس التعديل |
+| `src/hooks/useBatches.js` | نفس التعديل |
+| `src/hooks/useQuickDispense.js` | نفس التعديل |
+| `src/hooks/useRestockScan.js` | نفس التعديل |
+
+#### 🟡 تعديلات UI (Hardcoded → Dynamic):
+
+| الملف | التعديل |
+|-------|--------|
+| `src/components/layout/Sidebar.jsx` | `Cross` icon → لوجو المستخدم أو `Package` icon |
+| `src/pages/Login.jsx` | إزالة `Cross` + تغيير copyright |
+| `src/pages/Dashboard.jsx` | welcome text ديناميك + إزالة `Cross` |
+| `src/i18n/locales/ar.json` | تغيير كل "عيادة الأسنان" لقيم عامة |
+| `src/i18n/locales/en.json` | نفس التعديل |
+| `src/pages/Inventory.jsx` | العملة EGP → ديناميك من settings |
+| `src/components/settings/EditSystemModal.jsx` | إضافة: نوع مخزن، عملة، timezone |
+
+#### 🟢 ملفات/صفحات جديدة:
+
+| الملف | الوظيفة |
+|-------|--------|
+| `src/context/TenantContext.jsx` | 🆕 يحمل tenant data + subscription |
+| `src/components/auth/SubscriptionGuard.jsx` | 🆕 يمنع الوصول لو الاشتراك منتهي |
+| `src/pages/Signup.jsx` | 🆕 تسجيل حساب جديد |
+| `src/pages/Onboarding.jsx` | 🆕 Setup wizard |
+| `src/pages/Billing.jsx` | 🆕 إدارة الاشتراك |
+| `src/pages/Plans.jsx` | 🆕 عرض الخطط والأسعار |
+| `src/pages/SubscriptionExpired.jsx` | 🆕 صفحة انتهاء الاشتراك |
+
+---
+
+### 5️⃣ نظام الاشتراكات (Subscriptions)
+
+#### خطط الأسعار المقترحة:
+
+| الخطة | شهري | ربع سنوي | نصف سنوي | سنوي |
+|-------|------|----------|----------|------|
+| **Starter** | $9/شهر | $24/3 شهور | $45/6 شهور | $79/سنة |
+| **Pro** | $19/شهر | $49/3 شهور | $89/6 شهور | $149/سنة |
+| **Enterprise** | $39/شهر | $99/3 شهور | $179/6 شهور | $299/سنة |
+
+#### الفيتشرز لكل خطة:
+
+| الفيتشر | Starter | Pro | Enterprise |
+|---------|---------|-----|-----------|
+| عدد المنتجات | 200 | 2,000 | ♾️ Unlimited |
+| عدد المستخدمين | 1 | 5 | ♾️ Unlimited |
+| باركود سكانر | ✅ | ✅ | ✅ |
+| تنبيهات ذكية | ❌ | ✅ | ✅ |
+| تقارير وإحصائيات | Basic | Advanced | Advanced + Export |
+| نظام الدفعات (Batches) | ❌ | ✅ | ✅ |
+| سجل المعاملات | آخر 30 يوم | آخر 6 شهور | ♾️ كامل |
+| دعم فني | Email | Email + Chat | Priority + Phone |
+| Custom Branding | ❌ | ✅ | ✅ |
+| API Access | ❌ | ❌ | ✅ |
+
+#### بوابة الدفع:
+
+> [!IMPORTANT]
+> **اسأل المستخدم** عن بوابة الدفع المفضلة:
+
+| البوابة | المميزات | مناسب لـ |
+|---------|---------|---------|
+| **Stripe** | الأشهر عالمياً، subscriptions مدمجة | العملاء الدوليين |
+| **Paddle** | يتعامل مع الضرائب أوتوماتيك (MoR) | لو مش عايز تتعامل مع الضرائب |
+| **Paymob** | بوابة مصرية، فيزا/ماستر + فوري + ValU | العملاء المصريين |
+| **LemonSqueezy** | شبيه Paddle، أسهل في الـ setup | SaaS صغيرة/متوسطة |
+
+---
+
+### 6️⃣ Onboarding Flow (تسجيل عميل جديد)
+
+```mermaid
+flowchart TD
+    A["🌐 Landing Page"] --> B["📝 Sign Up"]
+    B --> C["✅ Verify Email"]
+    C --> D["🏪 Setup Store"]
+    D --> E{"اختر نوع المخزن"}
+    E --> F["صيدلية"]
+    E --> G["عيادة"]
+    E --> H["مطعم"]
+    E --> I["سوبرماركت"]
+    E --> J["مخزن عام"]
+    F & G & H & I & J --> K["📝 ادخل اسم المخزن EN/AR"]
+    K --> L["🖼️ ارفع اللوجو اختياري"]
+    L --> M["💰 اختر العملة"]
+    M --> N["📋 اختر خطة الاشتراك"]
+    N --> O["💳 ادفع"]
+    O --> P["🎉 Dashboard جاهز!"]
+
+    style A fill:#0891b2,color:#fff
+    style P fill:#10b981,color:#fff
+```
+
+**ايه اللي بيحصل تقنياً:**
+1. Firebase Auth يعمل الـ user
+2. يتعمل tenant document جديد بـ auto-generated ID
+3. يتعمل ربط بين الـ user والـ tenant (`users/{uid}.tenantId`)
+4. يتعمل default settings حسب نوع المخزن
+5. يتعمل default categories حسب نوع المخزن
+6. يتعمل subscription document بالخطة المختارة
+7. يتم redirect للـ Dashboard
+
+---
+
+### 7️⃣ Context/Provider Structure الجديدة
+
+#### تعديل `App.jsx` ليبقى:
+```jsx
+<ThemeProvider>                    // ← ثابت كما هو
+  <AuthProvider>                   // ← يتعدل: يحمل user + tenantId
+    <TenantProvider>               // ← 🆕 يحمل tenant data + subscription status
+      <SystemProvider>             // ← يتعدل: يقرأ من /tenants/{tenantId}/settings
+        <SubscriptionGuard>        // ← 🆕 يمنع الوصول لو الاشتراك منتهي
+          <ToastProvider>
+            <BrowserRouter>
+              <Routes>
+                {/* Public */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />       {/* 🆕 */}
+                <Route path="/plans" element={<Plans />} />          {/* 🆕 */}
+                
+                {/* Semi-Protected (needs auth, no subscription needed) */}
+                <Route path="/onboarding" element={<Onboarding />} /> {/* 🆕 */}
+                
+                {/* Protected */}
+                <Route element={<ProtectedRoute />}>
+                  <Route element={<AppShell />}>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/inventory" element={<Inventory />} />
+                    <Route path="/transactions" element={<Transactions />} />
+                    <Route path="/alerts" element={<Alerts />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/billing" element={<Billing />} />  {/* 🆕 */}
+                  </Route>
+                </Route>
+              </Routes>
+            </BrowserRouter>
+          </ToastProvider>
+        </SubscriptionGuard>
+      </SystemProvider>
+    </TenantProvider>
+  </AuthProvider>
+</ThemeProvider>
+```
+
+#### TenantContext (🆕) — `src/context/TenantContext.jsx`:
+```javascript
+// يحمل:
+// - tenantId (من user document)
+// - tenant metadata (name, type, logo, currency)
+// - subscription status (active/trial/expired)
+// - plan limits (maxItems, maxUsers)
+// - getTenantCollection(collectionName) — helper function
+```
+
+#### SubscriptionGuard (🆕) — `src/components/auth/SubscriptionGuard.jsx`:
+```javascript
+// السلوك:
+// - لو الاشتراك expired → redirect لصفحة "جدد اشتراكك"
+// - لو trial → يعرض banner "باقي X أيام في الفترة التجريبية"
+// - لو active → يمرر الـ children عادي
+// - لو المستخدم جديد ومالوش tenant → redirect لـ /onboarding
+```
+
+---
+
+### 8️⃣ تعديل `dbConfig.js`
+
+```javascript
+// ====== الوضع الحالي (يتحذف): ======
+export const collections = {
+  users: collection(db, "users"),
+  inventoryItems: collection(db, "inventory_items"),
+  categories: collection(db, "categories"),
+  tradeNames: collection(db, "trade_names"),
+  transactions: collection(db, "transactions"),
+  alerts: collection(db, "alerts"),
+};
+
+// ====== الوضع الجديد (يتكتب): ======
+import { collection } from "firebase/firestore";
+import { db } from "./firebase";
+
+// Tenant-scoped collections — كل tenant له مساره الخاص
+export const getTenantCollections = (tenantId) => ({
+  inventoryItems: collection(db, `tenants/${tenantId}/inventory_items`),
+  categories: collection(db, `tenants/${tenantId}/categories`),
+  tradeNames: collection(db, `tenants/${tenantId}/trade_names`),
+  transactions: collection(db, `tenants/${tenantId}/transactions`),
+  alerts: collection(db, `tenants/${tenantId}/alerts`),
+});
+
+// Global collections (مش تحت tenant)
+export const globalCollections = {
+  users: collection(db, "users"),
+  plans: collection(db, "plans"),
+  subscriptions: collection(db, "subscriptions"),
+};
+
+// Helpful constants (تفضل زي ما هي)
+export const TRANSACTION_TYPES = {
+  IN: "IN",
+  OUT: "OUT",
+};
+
+export const ALERTS = {
+  LOW_STOCK: "LOW_STOCK",
+  EXPIRING_SOON: "EXPIRING_SOON",
+};
+```
+
+---
+
+### 9️⃣ تعديل الـ Hooks
+
+**النمط العام لكل hook:**
+```javascript
+// ====== قبل: ======
+const itemsRef = collection(db, "inventory_items");
+
+// ====== بعد: ======
+import { useTenant } from "../context/TenantContext";
+
+const { tenantId } = useTenant();
+const itemsRef = collection(db, `tenants/${tenantId}/inventory_items`);
+```
+
+**القائمة الكاملة:**
+| Hook | الـ collection اللي يتغير |
+|------|--------------------------|
+| `useInventory.js` | `inventory_items` → `tenants/${tenantId}/inventory_items` |
+| `useTransactions.js` | `transactions` → `tenants/${tenantId}/transactions` |
+| `useCategories.js` | `categories` → `tenants/${tenantId}/categories` |
+| `useTradeNames.js` | `trade_names` → `tenants/${tenantId}/trade_names` |
+| `useAlerts.js` | `alerts` → `tenants/${tenantId}/alerts` |
+| `useAlertSync.js` | `alerts` → `tenants/${tenantId}/alerts` |
+| `useBatches.js` | `inventory_items/{id}/batches` → `tenants/${tenantId}/inventory_items/{id}/batches` |
+| `useQuickDispense.js` | يستخدم inventory + transactions → نفس التعديل |
+| `useRestockScan.js` | يستخدم inventory + transactions → نفس التعديل |
+
+---
+
+### 🔟 تعديلات i18n
+
+#### النصوص في `ar.json` اللي لازم تتغير:
+
+| المفتاح | القيمة الحالية | القيمة الجديدة |
+|---------|---------------|---------------|
+| `app.title` | `"مخزون عيادة الأسنان"` | `"نظام إدارة المخزون"` |
+| `sidebar.title` | `"عيادة الأسنان"` | يجي من `systemSettings.name_ar` (ديناميك) |
+| `sidebar.subtitle` | `"نظام المخزون"` | `"نظام إدارة المخزون"` |
+| `dashboard.welcome` | `"مرحبًا بك في نظام مخزون عيادة الأسنان"` | `"مرحبًا بك في {{storeName}}"` |
+| `dashboard.description` | `"أدِر مخزون عيادتك..."` | `"أدِر مخزونك بكفاءة مع التتبع اللحظي والتنبيهات الذكية."` |
+| `dashboard.chart_title` | `"سرعة عمليات العيادة"` | `"سرعة العمليات"` |
+| `inventory.table.price` | `"السعر (ج.م)"` | `"السعر"` (العملة تيجي ديناميك) |
+| `inventory.modals.unit_price` | `"سعر الوحدة (جنيه مصري)"` | `"سعر الوحدة"` |
+| `settings.notifications_desc` | `"تنبيهات نقص المخزون وانتهاء الصلاحية"` | يفضل كما هو ✅ |
+
+> نفس التعديلات لـ `en.json` (بالإنجليزي)
+
+---
+
+### 1️⃣1️⃣ Settings Document لكل Tenant
+
+```javascript
+// /tenants/{tenantId}/settings/system
+{
+  // === موجود في الكود الحالي (يفضل) ===
+  name_en: "Ahmed's Pharmacy",
+  name_ar: "صيدلية أحمد",
+  logoUrl: "data:image/png;base64,...",
+
+  // === 🆕 حقول جديدة ===
+  storeType: "pharmacy",        // pharmacy | clinic | restaurant | supermarket | warehouse | general
+  currency: "EGP",              // ISO 4217
+  currencySymbol: "ج.م",
+  timezone: "Africa/Cairo",
+  dateFormat: "DD/MM/YYYY",
+  lowStockThreshold: 5,         // default
+  expiryAlertDays: 30,          // تنبيه قبل الانتهاء بكام يوم
+  primaryColor: "#0891b2",      // لو عايز يغير اللون (Pro+)
+  address: "",
+  phone: "",
+  email: "",
+}
+```
+
+---
+
+### 1️⃣2️⃣ Store Types وتأثيرها
+
+| Store Type | Default Icon | الكاتيجوريز الافتراضية عند الـ Onboarding |
+|-----------|-------------|------------------------------------------|
+| `pharmacy` | 💊 Pill | أدوية، مستلزمات طبية، مكملات غذائية |
+| `clinic` | 🏥 Hospital | أدوات طبية، مستهلكات، أدوية |
+| `restaurant` | 🍽️ UtensilsCrossed | مواد خام، مشروبات، مواد تغليف |
+| `supermarket` | 🛒 ShoppingCart | أغذية، مشروبات، منظفات، منتجات شخصية |
+| `warehouse` | 📦 Warehouse | قسم A، قسم B (عام) |
+| `general` | 📦 Package | فارغ — المستخدم يعمل اللي يناسبه |
+
+---
+
+### 1️⃣3️⃣ اللاندنج بيج (بروجكت منفصل — يتعمل بعدين)
+
+> [!NOTE]
+> اللاندنج بيج **بروجكت ثاني منفصل تماماً** — مش في نفس الفولدر ده
+
+**لازم يحتوي على:**
+- Hero Section مع tagline
+- شرح الفيتشرز
+- Pricing Table (خطط الأسعار)
+- Screenshots/Demo
+- FAQ
+- CTA → يوديك على `/signup` في الـ SaaS app
+- Footer
+
+---
+
+## 🔒 ملخص العزل (Data Isolation)
+
+```
+┌─────────────────────────────────────────────┐
+│         Firebase Project الجديد              │
+│         (يتعمل عن طريق MCP)                 │
+│                                             │
+│  ┌──────────────┐  ┌──────────────┐         │
+│  │  Tenant A    │  │  Tenant B    │         │
+│  │  (صيدلية)    │  │  (مطعم)      │         │
+│  │              │  │              │         │
+│  │  items: 150  │  │  items: 80   │  🔒     │
+│  │  users: 3    │  │  users: 2    │  معزولين│
+│  │  txns: 500   │  │  txns: 200   │  تماماً │
+│  │              │  │              │         │
+│  │  ❌ لا يرى   │  │  ❌ لا يرى   │         │
+│  │  بيانات B    │  │  بيانات A    │         │
+│  └──────────────┘  └──────────────┘         │
+│                                             │
+│  ┌──────────────────────────────┐           │
+│  │  Shared (Root Level)         │           │
+│  │  /users, /plans              │           │
+│  └──────────────────────────────┘           │
+└─────────────────────────────────────────────┘
+```
+
+---
+
+## ❓ أسئلة لازم تسألها للمستخدم قبل التنفيذ
+
+> [!IMPORTANT]
+> اسأل المستخدم الأسئلة دي وانتظر إجابته:
+
+1. **💳 بوابة الدفع:** عايز تستخدم ايه؟ (Stripe / Paymob / Paddle / LemonSqueezy)
+2. **🆓 Free Trial:** عايز trial مجاني؟ كام يوم؟ (مثلاً 14 يوم)
+3. **💰 الأسعار:** الأسعار المقترحة كويسة ولا عايز تغير؟
+4. **📛 اسم المنتج SaaS:** ايه الاسم؟ (StockFlow, Makhzani, InvenTrack...)
+5. **⚙️ Cloud Functions:** محتاج backend logic (للـ webhooks والـ subscription) ولا client-side بس؟
+6. **👥 Multi-user:** من أول يوم ولا نبدأ بـ single user per tenant؟
+7. **🖥️ اللاندنج بيج:** تتعمل بإيه؟ (Next.js / Vite+React / HTML ثابت)
