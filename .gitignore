@@ -40,3 +40,5 @@ npm-debug.log*
 .netlify/
 # ─── Local Agent Settings & Skills ──────────────────────────────────────────
 .agents/
+
+.vercel
