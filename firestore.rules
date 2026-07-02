@@ -32,10 +32,19 @@ service cloud.firestore {
     }
 
     // ═══════════ Tenant Data (Isolated) ═══════════
-    // All sub-documents under a tenant require membership
-    match /tenants/{tenantId}/{document=**} {
-      allow read:  if isTenantMember(tenantId);
-      allow write: if isTenantMember(tenantId);
+    match /tenants/{tenantId} {
+      allow read, write: if isAuthenticated() && (
+        resource.data.ownerId == request.auth.uid ||
+        request.resource.data.ownerId == request.auth.uid ||
+        isTenantMember(tenantId)
+      );
+
+      match /{document=**} {
+        allow read, write: if isTenantMember(tenantId) || (
+          isAuthenticated() &&
+          getAfter(/databases/$(database)/documents/tenants/$(tenantId)).data.ownerId == request.auth.uid
+        );
+      }
     }
 
     // ═══════════ Subscription Plans (Public Read) ═══════════
