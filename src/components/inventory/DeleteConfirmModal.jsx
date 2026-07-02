@@ -53,7 +53,48 @@ const DeleteConfirmModal = ({ isOpen, onClose, item, onConfirm }) => {
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Permanent Delete" maxWidth="max-w-md">
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="Permanent Delete"
+      maxWidth="max-w-md"
+      footer={
+        <div className="flex gap-4">
+          <button
+            type="button"
+            onClick={handleClose}
+            disabled={loading}
+            className="flex-1 rounded-xl border border-gray-200 px-6 py-3 text-sm font-semibold
+              text-text-muted hover:bg-gray-100 transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight/50"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleConfirm}
+            disabled={!isConfirmed || loading}
+            className={`flex-1 rounded-xl px-6 py-3 text-sm font-bold text-white transition-all
+              flex items-center justify-center gap-2
+              ${isConfirmed && !loading
+                ? "bg-danger hover:bg-danger/90 shadow-sm active:scale-95"
+                : "bg-danger/30 cursor-not-allowed"
+              } disabled:cursor-not-allowed`}
+          >
+            {loading ? (
+              <>
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              <>
+                <HiOutlineTrash className="w-4 h-4" />
+                Permanently Delete
+              </>
+            )}
+          </button>
+        </div>
+      }
+    >
       <div className="flex flex-col gap-8">
 
         {/* ── Warning Icon + Message ────────────────────────────────────── */}
@@ -133,41 +174,6 @@ const DeleteConfirmModal = ({ isOpen, onClose, item, onConfirm }) => {
           )}
         </AnimatePresence>
 
-        {/* ── Action Buttons ────────────────────────────────────────────── */}
-        <div className="flex gap-4 pt-4">
-          <button
-            type="button"
-            onClick={handleClose}
-            disabled={loading}
-            className="flex-1 rounded-xl border border-gray-200 px-6 py-3 text-sm font-semibold
-              text-text-muted hover:bg-gray-100 transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight/50"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleConfirm}
-            disabled={!isConfirmed || loading}
-            className={`flex-1 rounded-xl px-6 py-3 text-sm font-bold text-white transition-all
-              flex items-center justify-center gap-2
-              ${isConfirmed && !loading
-                ? "bg-danger hover:bg-danger/90 shadow-sm active:scale-95"
-                : "bg-danger/30 cursor-not-allowed"
-              } disabled:cursor-not-allowed`}
-          >
-            {loading ? (
-              <>
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Deleting...
-              </>
-            ) : (
-              <>
-                <HiOutlineTrash className="w-4 h-4" />
-                Permanently Delete
-              </>
-            )}
-          </button>
-        </div>
       </div>
     </Modal>
   );

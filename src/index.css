@@ -351,12 +351,28 @@ html.dark .card {
    Z-Index Layering System
    ======================================== */
 /* z-10:  page content base */
-/* z-20:  sticky navbar */
+/* z-20:  navbar (in-flow) */
 /* z-30:  desktop sidebar */
-/* z-40:  mobile overlay */
+/* z-[45]: trial/subscription banner */
+/* z-40:  mobile overlay backdrop */
 /* z-50:  mobile sidebar drawer */
-/* z-60:  modals */
-/* z-70:  tooltips / toasts */
+/* z-[60]: modal backdrop */
+/* z-[61]: modal container */
+/* z-[62]: react-select portal menus (inside modals) */
+/* z-[70]: tooltips */
+/* z-[80]: toasts */
+
+/* react-select dropdown portal — must sit above modal (z-61) */
+.rs__menu-portal {
+  z-index: 62 !important;
+}
+
+/* ========================================
+   RTL Form Input Alignment
+   ======================================== */
+[dir="rtl"] .form-input {
+  text-align: right;
+}
 
 /* ========================================
    Mobile Overflow Guards
@@ -558,5 +574,25 @@ html.dark .form-input:disabled {
     background: white;
     padding: 32px;
     text-align: center;
+  }
+}
+
+/* ========================================
+   Dark Mode Scrollbar — more visible thumb
+   ======================================== */
+html.dark ::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
+/* ========================================
+   iOS Safe Area Padding
+   ======================================== */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }

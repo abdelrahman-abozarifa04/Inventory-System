@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useTenant } from "../../context/TenantContext";
 import { useAuth } from "../../context/AuthContext";
 
@@ -20,8 +21,10 @@ const TRIAL_BANNER_ROUTES_EXEMPT = ["/onboarding", "/billing", "/plans", "/subsc
 export const SubscriptionGuard = ({ children }) => {
   const { user, tenantId } = useAuth();
   const { subscriptionStatus, trialDaysRemaining, tenantLoading } = useTenant();
+  const { i18n } = useTranslation();
   const navigate     = useNavigate();
   const { pathname } = useLocation();
+  const isRTL = i18n.dir(i18n.language) === "rtl";
 
   useEffect(() => {
     if (!user || tenantLoading) return;
@@ -48,27 +51,31 @@ export const SubscriptionGuard = ({ children }) => {
     subscriptionStatus === "trial" &&
     !TRIAL_BANNER_ROUTES_EXEMPT.includes(pathname);
 
+  const daysLabel = isRTL
+    ? (trialDaysRemaining === 1 ? "يوم" : "أيام")
+    : (trialDaysRemaining === 1 ? "day" : "days");
+
   return (
     <>
       {showTrialBanner && (
         <div
-          className="fixed top-0 inset-x-0 z-50 flex items-center justify-center gap-3 py-2 px-4 text-sm font-medium bg-amber-500 text-amber-950"
+          className="fixed top-0 inset-x-0 z-[45] flex items-center justify-center gap-3 py-2 px-4 text-sm font-medium bg-amber-500 text-amber-950"
           role="alert"
         >
           <span>⏳</span>
           <span>
-            الفترة التجريبية — باقي{" "}
-            <strong>{trialDaysRemaining} {trialDaysRemaining === 1 ? "يوم" : "أيام"}</strong>.{" "}
+            {isRTL ? "الفترة التجريبية — باقي" : "Trial period —"}{" "}
+            <strong>{trialDaysRemaining} {daysLabel}</strong>{isRTL ? "." : " remaining."}{" "}
             <button
               onClick={() => navigate("/billing")}
               className="underline underline-offset-2 hover:opacity-80 transition-opacity"
             >
-              اشترك الآن
+              {isRTL ? "اشترك الآن" : "Subscribe now"}
             </button>
           </span>
         </div>
       )}
-      <div className={showTrialBanner ? "pt-9" : ""}>{children}</div>
+      <div className={showTrialBanner ? "pt-11" : ""}>{children}</div>
     </>
   );
 };

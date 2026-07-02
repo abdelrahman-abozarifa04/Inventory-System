@@ -387,12 +387,46 @@ const InventoryModal = ({ isOpen, onClose, existingItem = null, prefillBarcode =
   const isEdit = !!existingItem;
   const leadVal = parseInt(formData.alert_lead_value) || 0;
 
+  // Footer buttons — rendered outside the scroll area via Modal's footer prop
+  const footerContent = (
+    <div className="flex justify-end gap-4">
+      <button
+        type="button"
+        onClick={loading ? undefined : onClose}
+        disabled={loading}
+        className="px-6 py-3 text-sm font-semibold text-text-muted
+          hover:bg-gray-100 rounded-xl transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight/50"
+      >
+        {t("common.cancel")}
+      </button>
+      <button
+        type="submit"
+        form="inventory-form"
+        disabled={loading}
+        className="px-6 py-3 text-sm font-semibold text-white
+          bg-primary hover:bg-primary-dark rounded-xl shadow-soft
+          transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed
+          min-w-[160px] flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight/50"
+      >
+        {loading ? (
+          <>
+            <span className="spinner animate-spin" style={{ width: 16, height: 16 }} />
+            {t("common.saving") || "Saving..."}
+          </>
+        ) : (
+          t("common.save")
+        )}
+      </button>
+    </div>
+  );
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={loading ? undefined : onClose}
       title={isEdit ? t("inventory.modals.edit_title") : t("inventory.modals.add_title")}
       maxWidth="max-w-3xl"
+      footer={footerContent}
     >
       {/* ── Error Banner ─────────────────────────────────────────────────── */}
       <AnimatePresence>
@@ -419,7 +453,7 @@ const InventoryModal = ({ isOpen, onClose, existingItem = null, prefillBarcode =
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-9" noValidate>
+      <form id="inventory-form" onSubmit={handleSubmit} className="flex flex-col gap-9" noValidate>
 
         {/* SECTION 1 — Product Image */}
         <fieldset className="flex flex-col gap-7">
@@ -835,37 +869,6 @@ const InventoryModal = ({ isOpen, onClose, existingItem = null, prefillBarcode =
           </div>
         )}
 
-        {/* ════════════════════════════════════════════════════════════════
-            FORM ACTIONS
-        ════════════════════════════════════════════════════════════════ */}
-        <div className="sticky bottom-0 flex justify-end gap-4 border-t border-gray-100 bg-surface py-5">
-          <button
-            type="button"
-            onClick={loading ? undefined : onClose}
-            disabled={loading}
-            className="px-6 py-3 text-sm font-semibold text-text-muted
-              hover:bg-gray-100 rounded-xl transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight/50"
-          >
-            {t("common.cancel")}
-          </button>
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-6 py-3 text-sm font-semibold text-white
-              bg-primary hover:bg-primary-dark rounded-xl shadow-soft
-              transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed
-              min-w-[160px] flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight/50"
-          >
-            {loading ? (
-              <>
-                <span className="spinner animate-spin" style={{ width: 16, height: 16 }} />
-                {t("common.saving") || "Saving..."}
-              </>
-            ) : (
-              t("common.save")
-            )}
-          </button>
-        </div>
       </form>
     </Modal>
   );

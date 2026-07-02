@@ -38,7 +38,7 @@ const Navbar = ({ onMenuToggle, isMobileOpen }) => {
 
   return (
     <motion.header
-      className="sticky top-4 z-20 mx-4 my-2 rounded-2xl border border-border bg-surface-glass backdrop-blur-xl shadow-soft overflow-hidden"
+      className="z-20 mx-4 my-2 rounded-2xl border border-border bg-surface-glass backdrop-blur-xl shadow-soft overflow-hidden"
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}

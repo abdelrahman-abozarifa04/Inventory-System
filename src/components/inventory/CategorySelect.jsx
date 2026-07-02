@@ -114,6 +114,10 @@ const CategorySelect = ({ value, onChange, disabled }) => {
         ...base,
         color: "var(--color-text-muted)",
       }),
+      menuPortal: (base) => ({
+        ...base,
+        zIndex: 62,
+      }),
     }),
     [isRTL, disabled]
   );
@@ -174,6 +178,8 @@ const CategorySelect = ({ value, onChange, disabled }) => {
       noOptionsMessage={() => t("inventory.modals.category_no_options", "No categories")}
       styles={styles}
       classNamePrefix="rs"
+      menuPortalTarget={document.body}
+      menuPosition="fixed"
     />
   );
 };

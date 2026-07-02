@@ -37,7 +37,7 @@ const AppShell = () => {
 
         {/* Page Content */}
         <motion.main
-          className="flex-1 overflow-y-auto overflow-x-hidden bg-pattern px-4 py-10 sm:px-6 lg:px-10 lg:py-12"
+          className="flex-1 overflow-y-auto overflow-x-hidden bg-pattern px-4 py-10 pb-6 sm:px-6 lg:px-10 lg:py-12 safe-area-bottom"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}

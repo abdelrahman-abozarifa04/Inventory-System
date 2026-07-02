@@ -112,6 +112,10 @@ const TradeNameSelect = ({ value, onChange, disabled }) => {
         ...base,
         color: "var(--color-text-muted)",
       }),
+      menuPortal: (base) => ({
+        ...base,
+        zIndex: 62,
+      }),
     }),
     [isRTL, disabled]
   );
@@ -170,6 +174,8 @@ const TradeNameSelect = ({ value, onChange, disabled }) => {
       noOptionsMessage={() => t("inventory.modals.trade_name_no_options", "No trade names")}
       styles={styles}
       classNamePrefix="rs"
+      menuPortalTarget={document.body}
+      menuPosition="fixed"
     />
   );
 };

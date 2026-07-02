@@ -50,8 +50,34 @@ const EditProfileModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Edit Profile">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Edit Profile"
+      footer={
+        <div className="flex justify-end gap-4">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className="px-6 py-3 text-sm font-semibold text-text-muted hover:bg-gray-100 rounded-xl transition-colors disabled:opacity-50"
+          >
+            {t("common.cancel", "Cancel")}
+          </button>
+          <button
+            type="submit"
+            form="edit-profile-form"
+            disabled={loading}
+            className="flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-semibold text-white transition-colors hover:bg-primary-dark disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight/50 min-w-[140px]"
+          >
+            {loading ? (
+              <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : t("common.save", "Save Changes")}
+          </button>
+        </div>
+      }
+    >
+      <form id="edit-profile-form" onSubmit={handleSubmit} className="flex flex-col gap-6">
         {/* Profile Image */}
         <div className="mb-2 flex flex-col items-center gap-5">
           <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-primary bg-primary/10 flex items-center justify-center">
@@ -91,15 +117,6 @@ const EditProfileModal = ({ isOpen, onClose }) => {
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-semibold text-white transition-colors hover:bg-primary-dark disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight/50"
-        >
-          {loading ? (
-            <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-          ) : "Save Changes"}
-        </button>
       </form>
     </Modal>
   );
