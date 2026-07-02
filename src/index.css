@@ -396,6 +396,22 @@ html.dark .card {
 }
 
 /* ========================================
+   Telemetry Pulse — value-changed acknowledgment
+   A single cyan ring blooms out and settles. Fires only on live
+   data change (see AnimatedNumber), never at rest. "Glow-Is-A-State."
+   ======================================== */
+@keyframes telemetry-pulse {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+
+/* ========================================
    Scanner Flash Animation
    ======================================== */
 @keyframes scan-flash {
@@ -594,5 +610,22 @@ html.dark ::-webkit-scrollbar-thumb:hover {
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .safe-area-bottom {
     padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* ========================================
+   Reduced Motion — accessibility safety net
+   Framer Motion is already gated app-wide via <MotionConfig
+   reducedMotion="user">; this covers the CSS keyframes it can't see
+   (spinner, scan line/flash, telemetry pulse, Tailwind animate-*).
+   ======================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

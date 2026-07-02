@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { MotionConfig } from "framer-motion";
 import AppShell from "./components/layout/AppShell";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
 import { SubscriptionGuard } from "./components/auth/SubscriptionGuard";
@@ -78,14 +79,16 @@ function App() {
   useDirection();
 
   return (
-    <ThemeProvider>
-      <ToastProvider>
-        <AuthProvider>
-          <AppInner />
-        </AuthProvider>
-        <ToastContainer />
-      </ToastProvider>
-    </ThemeProvider>
+    <MotionConfig reducedMotion="user">
+      <ThemeProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <AppInner />
+          </AuthProvider>
+          <ToastContainer />
+        </ToastProvider>
+      </ThemeProvider>
+    </MotionConfig>
   );
 }
 

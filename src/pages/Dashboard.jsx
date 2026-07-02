@@ -19,6 +19,7 @@ import useSystem from "../context/SystemContext";
 import { Card, CardContent, CardHeader } from "../components/ui/Card";
 import { DataTable, TableScroll, TableShell, Td, Th } from "../components/ui/Table";
 import Skeleton, { SkeletonRows } from "../components/ui/Skeleton";
+import AnimatedNumber from "../components/ui/AnimatedNumber";
 
 const Dashboard = () => {
    const { t, i18n } = useTranslation();
@@ -166,7 +167,11 @@ const Dashboard = () => {
                               <Icon className={`h-6 w-6 ${stat.iconColor}`} />
                            </div>
                            <span className="text-4xl font-bold tabular-nums text-text">
-                              {isLoading ? <Skeleton className="h-9 w-12" /> : stat.value}
+                              {isLoading ? (
+                                 <Skeleton className="h-9 w-12" />
+                              ) : (
+                                 <AnimatedNumber value={stat.value} format={(n) => n.toLocaleString(isRTL ? "ar-EG" : "en-US")} />
+                              )}
                            </span>
                         </div>
                         <p className="mt-3 text-sm font-medium text-text-muted">{stat.label}</p>
