@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Dental Clinic Inventory Management System - Manage your clinic inventory efficiently with real-time tracking, smart alerts, and comprehensive analytics." />
+    <meta name="keywords" content="dental clinic, inventory management, healthcare, medical supplies, clinic management" />
+    <meta name="author" content="Dental Clinic IMS" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+
+    <!-- Page Title -->
+    <title>Dental Clinic | Inventory Management System</title>
+    <script type="module" crossorigin src="/assets/index-B4SJe0YV.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-Da3Cyy5Y.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
